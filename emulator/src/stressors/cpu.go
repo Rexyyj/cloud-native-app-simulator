@@ -21,7 +21,9 @@ import (
 	model "application-model"
 	"application-model/generated"
 	"fmt"
+	"os"
 	"runtime"
+	"strconv"
 	"sync"
 )
 
@@ -68,6 +70,14 @@ func StressCPU(executionTime float32, lockThread bool) {
 // Stress the CPU by running a busy loop, if the endpoint has a defined CPU complexity
 func (c *CPUTask) ExecTask(endpoint *model.Endpoint, responses *MutexTaskResponses) {
 	stressParams := endpoint.CpuComplexity
+	cpuRequestStr := os.Getenv("CPU_REQUEST")
+	cpuRequest64, err := strconv.ParseFloat(cpuRequestStr, 64)
+
+	if err != nil || cpuRequest64 <= 0 {
+		cpuRequest64 = 1 // Default value if parsing fails or is invalid
+	}
+	cpuRequest := float32(cpuRequest64)
+	executionTimePerRequest := stressParams.ExecutionTime / cpuRequest
 
 	if stressParams.Threads > 1 {
 		wg := sync.WaitGroup{}
@@ -76,13 +86,13 @@ func (c *CPUTask) ExecTask(endpoint *model.Endpoint, responses *MutexTaskRespons
 		for i := 0; i < stressParams.Threads; i++ {
 			go func() {
 				defer wg.Done()
-				StressCPU(stressParams.ExecutionTime, true)
+				StressCPU(executionTimePerRequest, true)
 			}()
 		}
 
 		wg.Wait()
 	} else {
-		StressCPU(stressParams.ExecutionTime, true)
+		StressCPU(executionTimePerRequest, true)
 	}
 
 	svc := fmt.Sprintf("%s/%s", util.ServiceName, endpoint.Name)
