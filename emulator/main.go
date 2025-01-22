@@ -29,6 +29,8 @@ import (
 // Load the config map from the CONF environment variable
 func LoadConfigMap() (*model.ConfigMap, error) {
 	configFilename := os.Getenv("CONF")
+	println("File name")
+	println(configFilename)
 	configFile, err := os.Open(configFilename)
 	configFileByteValue, _ := io.ReadAll(configFile)
 

@@ -21,7 +21,10 @@ import (
 	model "application-model"
 	"application-model/generated"
 	"fmt"
+	"io"
 	"net/http"
+	"strconv"
+	"strings"
 	"sync"
 
 	"google.golang.org/grpc/codes"
@@ -53,9 +56,29 @@ func ExtractHeaders(request any) http.Header {
 	return forwardHeaders
 }
 
-func httpRequest(service model.CalledService, forwardHeaders http.Header) generated.EndpointResponse {
+func httpRequest(service model.CalledService, request any) generated.EndpointResponse {
+	forwardHeaders := ExtractHeaders(request)
+	r, _ := request.(*http.Request)
+	// Read the body
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		return generated.EndpointResponse{
+			Service:  &service,
+			Status:   err.Error(),
+			Protocol: "HTTP",
+		}
+	}
+	defer r.Body.Close()
+	payload := strings.Split(string(body), "/")[0]
+	forward_map := strings.Split(payload, ",")
+	config_index, _ := strconv.Atoi(forward_map[0])
+	next_svc_config := forward_map[config_index]
+	forward_map[0] = strconv.Itoa(config_index + 1)
+	new_payload := strings.Join(forward_map, ",")
+	new_body := new_payload + "/" + RandomPayload(service.RequestPayloadSize-len(new_payload))
+
 	status, response, err :=
-		client.POST(service.Service, service.Endpoint, service.Port, RandomPayload(service.RequestPayloadSize), forwardHeaders)
+		client.POST(service.Service+"_"+next_svc_config, service.Endpoint, service.Port, new_body, forwardHeaders)
 
 	if err != nil {
 		return generated.EndpointResponse{
@@ -95,7 +118,7 @@ func grpcRequest(service model.CalledService) generated.EndpointResponse {
 
 // Forward requests to all services sequentially and return REST or gRPC responses
 func ForwardSequential(request any, services []model.CalledService) []generated.EndpointResponse {
-	forwardHeaders := ExtractHeaders(request)
+	// forwardHeaders := ExtractHeaders(request)
 	len := 0
 	for _, service := range services {
 		len += service.TrafficForwardRatio
@@ -106,7 +129,7 @@ func ForwardSequential(request any, services []model.CalledService) []generated.
 	for _, service := range services {
 		for j := 0; j < service.TrafficForwardRatio; j++ {
 			if service.Protocol == "http" {
-				response := httpRequest(service, forwardHeaders)
+				response := httpRequest(service, request)
 				responses[i] = response
 			} else if service.Protocol == "grpc" {
 				response := grpcRequest(service)
@@ -119,9 +142,9 @@ func ForwardSequential(request any, services []model.CalledService) []generated.
 	return responses
 }
 
-func parallelHTTPRequest(responses []generated.EndpointResponse, i int, service model.CalledService, forwardHeaders http.Header, wg *sync.WaitGroup) {
+func parallelHTTPRequest(responses []generated.EndpointResponse, i int, service model.CalledService, request any, wg *sync.WaitGroup) {
 	defer wg.Done()
-	response := httpRequest(service, forwardHeaders)
+	response := httpRequest(service, request)
 	// No mutex needed since every response has its own index
 	responses[i] = response
 }
@@ -135,7 +158,7 @@ func parallelGRPCRequest(responses []generated.EndpointResponse, i int, service 
 
 // Forward requests to all services in parallel using goroutines and return REST or gRPC responses
 func ForwardParallel(request any, services []model.CalledService) []generated.EndpointResponse {
-	forwardHeaders := ExtractHeaders(request)
+	// forwardHeaders := ExtractHeaders(request)
 	len := 0
 	for _, service := range services {
 		len += service.TrafficForwardRatio
@@ -148,7 +171,7 @@ func ForwardParallel(request any, services []model.CalledService) []generated.En
 		for j := 0; j < service.TrafficForwardRatio; j++ {
 			if service.Protocol == "http" {
 				wg.Add(1)
-				go parallelHTTPRequest(responses, i, service, forwardHeaders, &wg)
+				go parallelHTTPRequest(responses, i, service, request, &wg)
 			} else if service.Protocol == "grpc" {
 				wg.Add(1)
 				go parallelGRPCRequest(responses, i, service, &wg)
