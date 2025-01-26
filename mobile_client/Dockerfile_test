@@ -1,0 +1,13 @@
+FROM python:3.9-slim
+
+# Set working directory
+WORKDIR /app
+
+# Copy the Python script
+COPY test.py .
+
+# Install pymongo
+RUN pip install pymongo
+
+# Run the script
+CMD ["python", "test.py"]

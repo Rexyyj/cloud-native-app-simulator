@@ -1,0 +1,12 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: insert-data-job
+spec:
+  template:
+    spec:
+      containers:
+      - name: python-mongodb
+        image: rexyyj/python-mongodb-insert:latest
+      restartPolicy: Never
+  backoffLimit: 4
