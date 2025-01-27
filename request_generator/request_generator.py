@@ -169,7 +169,7 @@ if __name__ == "__main__":
         }
     }
     # set this address to host ip address to enable dockers to use REST api
-    cherrypy.server.socket_host = "localhost"
+    cherrypy.server.socket_host = "0.0.0.0"
     cherrypy.config.update(
         {'server.socket_port':2333 })
 
