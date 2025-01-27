@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: request-generator-deployment
+  labels:
+    app: request-generator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: request-generator
+  template:
+    metadata:
+      labels:
+        app: request-generator
+    spec:
+      containers:
+      - name: request-generator
+        image: rexyyj/request-generator:latest
+        ports:
+        - containerPort: 80
+      nodeName: k8s-node
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: request-generator-service
+spec:
+  selector:
+    app: request-generator
+  ports:
+  - protocol: TCP
+    port: 2333
+    targetPort: 2333
