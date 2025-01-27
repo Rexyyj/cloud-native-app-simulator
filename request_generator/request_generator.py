@@ -30,6 +30,8 @@ class USER:
         self.number_of_workers =0
         for i in range(len(apps)):
             self.number_of_workers+= frequencys[i]
+        if self.number_of_workers<1:
+            self.number_of_workers = 1
 
         self.thread_pool =[]
         # Queue to hold tasks
@@ -109,7 +111,7 @@ class USER:
             print("Producer %d running" % app)
             # Add task to the queue
             self.counter[app]+=1
-            self.task_queue.put({"counter": self.counter, "app":app})
+            self.task_queue.put({"counter": self.counter[app], "app":app})
             time.sleep(interval)  # Control the frequency accurately
 
 class REQGEN:
