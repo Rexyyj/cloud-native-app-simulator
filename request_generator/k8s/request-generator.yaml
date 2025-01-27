@@ -18,7 +18,7 @@ spec:
       - name: request-generator
         image: rexyyj/request-generator:latest
         ports:
-        - containerPort: 80
+        - containerPort: 2333
       nodeName: k8s-node
 ---
 apiVersion: v1
