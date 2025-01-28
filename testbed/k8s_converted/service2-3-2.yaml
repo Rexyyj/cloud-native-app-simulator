@@ -39,7 +39,7 @@ spec:
         - name: GOMEMLIMIT
           value: '1024000000'
         - name: CPU_REQUEST
-          value: 10
+          value: '10'
         image: rexyyj/hydragen-emulator:442111c0
         imagePullPolicy: Never
         name: app
@@ -49,7 +49,7 @@ spec:
           httpGet:
             path: /
             port: 5000
-          initialDelaySeconds: '0'
+          initialDelaySeconds: 0
           periodSeconds: 1
         resources:
           limits:
