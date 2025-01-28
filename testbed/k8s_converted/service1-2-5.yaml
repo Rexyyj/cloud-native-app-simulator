@@ -1,0 +1,87 @@
+apiVersion: v1
+data:
+  conf.json: '{"processes": 2, "logging": true, "protocol": "http", "endpoints": [{"name":
+    "endpoint1", "execution_mode": "sequential", "cpu_complexity": {"execution_time":
+    0.1, "threads": 1}, "network_complexity": {"forward_requests": "asynchronous",
+    "response_payload_size": 512, "called_services": [{"service": "service2", "port":
+    80, "endpoint": "endpoint1", "protocol": "http", "traffic_forward_ratio": 1, "request_payload_size":
+    256}]}}]}'
+kind: ConfigMap
+metadata:
+  labels:
+    name: config-service1-2-5
+    version: cluster-1
+  name: config-service1-2-5
+  namespace: default
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    version: cluster-1
+  name: service1-2-5
+  namespace: default
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: service1-2-5
+      version: cluster-1
+  template:
+    metadata:
+      annotations: {}
+      labels:
+        app: service1-2-5
+        version: cluster-1
+    spec:
+      containers:
+      - env:
+        - name: SERVICE_NAME
+          value: service1-2-5
+        - name: GOMEMLIMIT
+          value: '1024000000'
+        - name: CPU_REQUEST
+          value: 10
+        image: rexyyj/hydragen-emulator:442111c0
+        imagePullPolicy: Never
+        name: app
+        ports:
+        - containerPort: 5000
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          initialDelaySeconds: '0'
+          periodSeconds: 1
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 1024M
+          requests:
+            cpu: 1000m
+            memory: 1024M
+        volumeMounts:
+        - mountPath: /usr/src/emulator/config
+          name: config-data-volume
+      nodeName: dummy
+      volumes:
+      - configMap:
+          name: config-service1-2-5
+        name: config-data-volume
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    http: /
+  labels:
+    version: cluster-1
+  name: service1-2-5
+  namespace: default
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 5000
+  selector:
+    app: service1-2-5
