@@ -4,7 +4,7 @@ import yaml
 
 ms = sys.argv[1]
 
-config_folder = "/home/rex/gitHub/cloud-native-app-simulator/testbed/k8s_converted/"
+config_folder = "./k8s_converted/"
 
 
 os.system("kubectl delete -f "+config_folder+ms+".yaml")

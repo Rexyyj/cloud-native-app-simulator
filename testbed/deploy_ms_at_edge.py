@@ -5,7 +5,7 @@ import yaml
 ms = sys.argv[1]
 edge = sys.argv[2]
 
-config_folder = "/home/rex/gitHub/cloud-native-app-simulator/testbed/k8s_converted/"
+config_folder = "./k8s_converted/"
 
 with open(config_folder+ms+".yaml", "r") as f:
     config = list(yaml.safe_load_all(f))
