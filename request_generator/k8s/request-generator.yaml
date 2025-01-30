@@ -16,10 +16,14 @@ spec:
     spec:
       containers:
       - name: request-generator
+        env:
+          - name: EDGE_ID
+            value: "1"
         image: rexyyj/request-generator:latest
         ports:
         - containerPort: 2333
       nodeName: k8s-node
+      
 ---
 apiVersion: v1
 kind: Service

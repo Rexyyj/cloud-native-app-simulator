@@ -7,6 +7,7 @@ import string, random
 import time
 import pickle
 import numpy as np
+import os
 # ms_chains structure "2,MS1-1-1,1-2"
 # First MS full name <name>-<quality>-<instance>
 # Following MS only <quality>-<instance>
@@ -22,6 +23,7 @@ class USER:
         self.bandwidth = bandwidth
         self.header = {"Content-Type": "application/json"} 
         self.apps = apps
+        self.edge_id = int(os.environ.get('EDGE_ID', '0'))
 
         self.head_ms =[]
         for ms in ms_chains:
@@ -49,6 +51,9 @@ class USER:
         self.frequency = config["frequency"]
         self.bandwidth = config["bandwidth"]
         self.ms_chains = config["ms_chain"]
+
+    def update_bandwidth(self, bw):
+        self.bandwidth = bw
 
 
     def run(self):
@@ -90,7 +95,7 @@ class USER:
                 print(f"An error occurred: {e}")
             elapsed_time = (time.time_ns() - begin_time) / 1e6
 
-            measurement = {"user_id":self.id,"app":self.apps[app], "counter":counter, "latency":elapsed_time, "payload_size":self.payload_size[app], "freq":self.frequency[app] }
+            measurement = {"user_id":self.id,"app":self.apps[app], "edge":self.edge_id,"time":begin_time ,"counter":counter, "latency":elapsed_time, "payload_size":self.payload_size[app], "freq":self.frequency[app] }
             # print("Insert one measurement to DB: ", measurement)
             self.collection.insert_one(measurement)
         except Exception as e:
@@ -142,17 +147,28 @@ class REQGEN:
                 self.user_dict[data["user_id"]] = user
                 response = {"status":"User created"}
             return pickle.dumps(response)
-            
+        
+        if uri[0] == "updateBW":
+            body = cherrypy.request.body.read()
+            data = pickle.loads(body)
+            try:
+                user = self.user_dict[data["user_id"]]
+                user.update_bw(data["bandwidth"])
+                response = {"status":"User bw updated"}
+            except:
+                response = {"status":"User not exist"}
+            return pickle.dumps(response)
+
         if uri[0] == "stop":
             body = cherrypy.request.body.read()
             data = pickle.loads(body)
-            # try:
-            user = self.user_dict[data["user_id"]]
-            user.stop()
-            del self.user_dict[data["user_id"]]
-            response = {"status":"User removed"}
-            # except:
-            #     response = {"status":"User not exist"}
+            try:
+                user = self.user_dict[data["user_id"]]
+                user.stop()
+                del self.user_dict[data["user_id"]]
+                response = {"status":"User removed"}
+            except:
+                response = {"status":"User not exist"}
 
             return pickle.dumps(response)
 
