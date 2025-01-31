@@ -13,7 +13,7 @@ import os
 # Following MS only <quality>-<instance>
 # payload_size, frequency, ms_chains are list
 class USER:
-    def __init__(self, id, payload_size,frequencys, bandwidth,apps,ms_chains):
+    def __init__(self, id, payload_size,frequencys, bandwidth,apps,entry_points,ms_chains):
         self.id = id
         self.payload_size = payload_size
         self.frequency = frequencys
@@ -23,6 +23,7 @@ class USER:
         self.bandwidth = bandwidth
         self.header = {"Content-Type": "application/json"} 
         self.apps = apps
+        self.entry_points = entry_points
         self.edge_id = int(os.environ.get('EDGE_ID', '0'))
 
         self.head_ms =[]
@@ -78,7 +79,7 @@ class USER:
     # Function to send a POST request
     def send_post_request(self, counter, app):
         try:
-            url = "http://%s/%s" % (self.head_ms[app], "endpoint1")
+            url = "http://%s/%s" % (self.head_ms[app],self.entry_points[app])
             payload = self.ms_chains[app]+"/"+''.join(random.choices(string.ascii_letters, k=self.payload_size[app]-len(self.ms_chains[app])-1))
 
             begin_time = time.time_ns()
@@ -95,7 +96,7 @@ class USER:
                 print(f"An error occurred: {e}")
             elapsed_time = (time.time_ns() - begin_time) / 1e6
 
-            measurement = {"user_id":self.id,"app":self.apps[app], "edge":self.edge_id,"time":begin_time ,"counter":counter, "latency":elapsed_time, "payload_size":self.payload_size[app], "freq":self.frequency[app] }
+            measurement = {"user_id":self.id,"app":self.apps[app],"entry":self.entry_points[app] ,"edge":self.edge_id,"time":begin_time ,"counter":counter, "latency":elapsed_time, "payload_size":self.payload_size[app], "freq":self.frequency[app] }
             # print("Insert one measurement to DB: ", measurement)
             self.collection.insert_one(measurement)
         except Exception as e:
@@ -143,6 +144,7 @@ class REQGEN:
                             frequencys=data["frequency"],
                             bandwidth=data["bandwidth"],
                             apps=data["app"],
+                            entry_points=data["entry_point"],
                             ms_chains=data["ms_chain"])
                 self.user_dict[data["user_id"]] = user
                 response = {"status":"User created"}
