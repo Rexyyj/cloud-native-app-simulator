@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: config-ms1
+    labels:
+        name: config-ms1
+        version: cluster-1
+    namespace: default
+data:
+    conf.json: '{"processes":2,"logging":true,"protocol":"http","endpoints":[{"name":"endpoint1","execution_mode":"sequential","cpu_complexity":{"execution_time":0.028,"threads":1},"network_complexity":{"forward_requests":"asynchronous","response_payload_size":500000,"called_services":[{"service":"ms2","port":80,"endpoint":"endpoint1","protocol":"http","traffic_forward_ratio":1,"request_payload_size":500000}]}},{"name":"endpoint2","execution_mode":"sequential","cpu_complexity":{"execution_time":0.028,"threads":1},"network_complexity":{"forward_requests":"asynchronous","response_payload_size":500000,"called_services":[{"service":"ms2","port":80,"endpoint":"endpoint2","protocol":"http","traffic_forward_ratio":1,"request_payload_size":500000}]}}]}'
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: ms1
+    namespace: default
+    labels:
+        version: cluster-1
+spec:
+    selector:
+        matchLabels:
+            app: ms1
+            version: cluster-1
+    replicas: 1
+    template:
+        metadata:
+            labels:
+                app: ms1
+                version: cluster-1
+            annotations: {}
+        spec:
+            nodeName: dummy
+            containers:
+                - name: app
+                  image: rexyyj/hydragen-emulator:8e838d61
+                  imagePullPolicy: Never
+                  env:
+                    - name: SERVICE_NAME
+                      value: ms1
+                    - name: GOMEMLIMIT
+                      value: "100000000"
+                  ports:
+                    - containerPort: 5000
+                  volumeMounts:
+                    - mountPath: /usr/src/emulator/config
+                      name: config-data-volume
+                  readinessProbe:
+                    httpGet:
+                        path: /
+                        port: 5000
+                    initialDelaySeconds: 1
+                    periodSeconds: 1
+                  resources:
+                    limits:
+                        cpu: 1000m
+                        memory: 100M
+                    requests:
+                        cpu: 100m
+                        memory: 50M
+            volumes:
+                - name: config-data-volume
+                  configMap:
+                    name: config-ms1
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: ms1
+    namespace: default
+    labels:
+        version: cluster-1
+    annotations:
+        http: /
+spec:
+    selector:
+        app: ms1
+    ports:
+        - name: http
+          port: 80
+          targetPort: 5000

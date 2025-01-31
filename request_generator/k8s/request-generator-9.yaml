@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: request-generator-9
+  labels:
+    app: request-generator-9
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: request-generator-9
+  template:
+    metadata:
+      labels:
+        app: request-generator-9
+    spec:
+      containers:
+      - name: request-generator-9
+        env:
+          - name: EDGE_ID
+            value: "9"
+        image: rexyyj/request-generator:latest
+        ports:
+        - containerPort: 2333
+      nodeName: gke-mschain-cluster-default-pool-a9c2db1c-scnf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: request-generator-9
+spec:
+  selector:
+    app: request-generator-9
+  ports:
+  - protocol: TCP
+    port: 2333
+    targetPort: 2333

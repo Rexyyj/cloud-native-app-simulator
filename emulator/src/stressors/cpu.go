@@ -76,7 +76,7 @@ func (c *CPUTask) ExecTask(endpoint *model.Endpoint, responses *MutexTaskRespons
 	if err != nil || cpuRequest64 <= 0 {
 		cpuRequest64 = 1 // Default value if parsing fails or is invalid
 	}
-	cpuRequest := float32(cpuRequest64) / 10
+	cpuRequest := float32(cpuRequest64) / 1000
 	executionTimePerRequest := stressParams.ExecutionTime / cpuRequest
 
 	if stressParams.Threads > 1 {

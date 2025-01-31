@@ -25,6 +25,7 @@ spec:
       volumes:
       - name: mongodb-storage
         emptyDir: {}
+      nodeName: gke-mschain-cluster-default-pool-50cd80bf-lgg2
 ---
 apiVersion: v1
 kind: Service
