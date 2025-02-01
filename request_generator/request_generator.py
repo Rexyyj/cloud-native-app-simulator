@@ -73,7 +73,7 @@ class USER:
             if t.is_alive():
                 t.join(timeout=0.1)
         # Drain the queue (allow workers to finish processing)
-        self.task_queue.join()
+        # self.task_queue.join()
 
 
     # Function to send a POST request
@@ -96,7 +96,7 @@ class USER:
                 print(f"An error occurred: {e}")
             elapsed_time = (time.time_ns() - begin_time) / 1e6
 
-            measurement = {"user_id":self.id,"app":self.apps[app],"entry":self.entry_points[app] ,"edge":self.edge_id,"time":begin_time ,"counter":counter, "latency":elapsed_time, "payload_size":self.payload_size[app], "freq":self.frequency[app] }
+            measurement = {"user_id":self.id,"app":self.apps[app],"entry":self.entry_points[app] ,"edge":self.edge_id,"time":int(begin_time/1e6) ,"counter":counter, "latency":elapsed_time, "payload_size":self.payload_size[app], "freq":self.frequency[app] }
             # print("Insert one measurement to DB: ", measurement)
             self.collection.insert_one(measurement)
         except Exception as e:
@@ -155,10 +155,10 @@ class REQGEN:
             data = pickle.loads(body)
             try:
                 user = self.user_dict[data["user_id"]]
-                user.update_bw(data["bandwidth"])
+                user.update_bandwidth(data["bandwidth"])
                 response = {"status":"User bw updated"}
             except:
-                response = {"status":"User not exist"}
+                response = {"status":"Bw update failed"}
             return pickle.dumps(response)
 
         if uri[0] == "stop":
@@ -170,7 +170,7 @@ class REQGEN:
                 del self.user_dict[data["user_id"]]
                 response = {"status":"User removed"}
             except:
-                response = {"status":"User not exist"}
+                response = {"status":"Stop user failed"}
 
             return pickle.dumps(response)
 

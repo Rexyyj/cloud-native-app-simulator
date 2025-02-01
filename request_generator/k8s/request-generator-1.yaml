@@ -19,10 +19,18 @@ spec:
         env:
           - name: EDGE_ID
             value: "1"
-        image: rexyyj/request-generator:latest
+        image: rexyyj/request-generator:8e838d62
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: 500m
+            memory: 100M
+          requests:
+            cpu: 200m
+            memory: 100M
         ports:
         - containerPort: 2333
-      nodeName: gke-mschain-cluster-default-pool-50cd80bf-lgg2
+      nodeName: gke-ms-cluster-default-pool-917bdbd8-0lq1
 ---
 apiVersion: v1
 kind: Service
