@@ -46,7 +46,7 @@ spec:
         - name: GOMEMLIMIT
           value: '100000000'
         - name: CPU_REQUEST
-          value: '1'
+          value: '100'
         image: rexyyj/hydragen-emulator:8e838d61
         imagePullPolicy: IfNotPresent
         name: app

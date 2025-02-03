@@ -39,17 +39,17 @@ func POST(service, endpoint string, port int, payload string, headers http.Heade
 		url = fmt.Sprintf("http://%s:%d/%s", service, port, endpoint)
 	}
 
-	var postData []byte
+	// var postData []byte
 
-	if useProtoJSON {
-		marshalOptions := protojson.MarshalOptions{UseProtoNames: true, AllowPartial: true}
-		postData, _ = marshalOptions.Marshal(&generated.Request{Payload: payload})
-	} else {
-		postData, _ = json.Marshal(&generated.Request{Payload: payload})
-	}
+	// if useProtoJSON {
+	// 	marshalOptions := protojson.MarshalOptions{UseProtoNames: true, AllowPartial: true}
+	// 	postData, _ = marshalOptions.Marshal(&generated.Request{Payload: payload})
+	// } else {
+	// 	postData, _ = json.Marshal(&generated.Request{Payload: payload})
+	// }
 
-	request, _ := http.NewRequest(http.MethodPost, url, bytes.NewReader(postData))
-
+	// request, _ := http.NewRequest(http.MethodPost, url, bytes.NewReader(postData))
+	request, _ := http.NewRequest(http.MethodPost, url, bytes.NewBufferString(payload))
 	// Forward any other headers set by the user
 	for key, values := range headers {
 		for _, value := range values {

@@ -1,24 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: request-generator-8
+  name: request-generator-7
   labels:
-    app: request-generator-8
+    app: request-generator-7
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: request-generator-8
+      app: request-generator-7
   template:
     metadata:
       labels:
-        app: request-generator-8
+        app: request-generator-7
     spec:
       containers:
-      - name: request-generator-8
+      - name: request-generator-7
         env:
           - name: EDGE_ID
-            value: "8"
+            value: "7"
         image: rexyyj/request-generator:8e838d62
         imagePullPolicy: Always
         resources:
@@ -30,15 +30,15 @@ spec:
             memory: 100M
         ports:
         - containerPort: 2333
-      nodeName: gke-ms-cluster-default-pool-917bdbd8-lp5w
+      nodeName: gke-ms-cluster-default-pool-917bdbd8-l3t5
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: request-generator-8
+  name: request-generator-7
 spec:
   selector:
-    app: request-generator-8
+    app: request-generator-7
   ports:
   - protocol: TCP
     port: 2333
