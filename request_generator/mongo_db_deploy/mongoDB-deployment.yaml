@@ -32,7 +32,7 @@ spec:
       volumes:
       - name: mongodb-storage
         emptyDir: {}
-      nodeName: gke-ms-cluster-default-pool-917bdbd8-2hh4
+      nodeName: gke-ms-cluster-default-pool-917bdbd8-l5ms
 ---
 apiVersion: v1
 kind: Service

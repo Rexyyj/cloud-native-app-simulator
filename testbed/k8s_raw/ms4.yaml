@@ -7,7 +7,7 @@ metadata:
         version: cluster-1
     namespace: default
 data:
-    conf.json: '{"processes":2,"logging":true,"protocol":"http","endpoints":[{"name":"endpoint1","execution_mode":"parallel","cpu_complexity":{"execution_time":0.028,"threads":1},"network_complexity":{"forward_requests":"asynchronous","response_payload_size":500000,"called_services":null}}]}'
+    conf.json: '{"processes":2,"logging":true,"protocol":"http","endpoints":[{"name":"endpoint1","execution_mode":"parallel","cpu_complexity":{"execution_time":0.028,"threads":1},"network_complexity":{"forward_requests":"asynchronous","response_payload_size":100,"called_services":null}}]}'
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -32,7 +32,7 @@ spec:
             nodeName: dummy
             containers:
                 - name: app
-                  image: rexyyj/hydragen-emulator:8e838d61
+                  image: rexyyj/hydragen-emulator:d86c9d8d
                   imagePullPolicy: Never
                   env:
                     - name: SERVICE_NAME

@@ -3,11 +3,7 @@ data:
   conf.json: '{"processes": 2, "logging": true, "protocol": "http", "endpoints": [{"name":
     "endpoint1", "execution_mode": "parallel", "cpu_complexity": {"execution_time":
     0.028, "threads": 1}, "network_complexity": {"forward_requests": "asynchronous",
-    "response_payload_size": 500000, "called_services": null}}, {"name": "endpoint2",
-    "execution_mode": "sequential", "cpu_complexity": {"execution_time": 0.028, "threads":
-    1}, "network_complexity": {"forward_requests": "asynchronous", "response_payload_size":
-    500000, "called_services": [{"service": "ms3", "port": 80, "endpoint": "endpoint1",
-    "protocol": "http", "traffic_forward_ratio": 1, "request_payload_size": 500000}]}}]}'
+    "response_payload_size": 100, "called_services": null}}]}'
 kind: ConfigMap
 metadata:
   labels:
@@ -44,7 +40,7 @@ spec:
           value: '100000000'
         - name: CPU_REQUEST
           value: '100'
-        image: rexyyj/hydragen-emulator:8e838d61
+        image: rexyyj/hydragen-emulator:d86c9d8d
         imagePullPolicy: IfNotPresent
         name: app
         ports:

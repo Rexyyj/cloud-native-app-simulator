@@ -30,7 +30,7 @@ spec:
             memory: 100M
         ports:
         - containerPort: 2333
-      nodeName: gke-ms-cluster-default-pool-917bdbd8-l3t5
+      nodeName: gke-ms-cluster-default-pool-917bdbd8-rvfh
 ---
 apiVersion: v1
 kind: Service
