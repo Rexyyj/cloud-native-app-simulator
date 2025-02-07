@@ -52,6 +52,8 @@ class USER:
         self.frequency = config["frequency"]
         self.bandwidth = config["bandwidth"]
         self.ms_chains = config["ms_chain"]
+        self.entry_points =config["entry_points"]
+        self.apps=config["apps"]
 
     def update_bandwidth(self, bw):
         self.bandwidth = bw

@@ -19,7 +19,7 @@ spec:
         env:
           - name: EDGE_ID
             value: "1"
-        image: rexyyj/request-generator:8e838d62
+        image: rexyyj/request-generator:8e838d69
         imagePullPolicy: Always
         resources:
           limits:
