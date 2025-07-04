@@ -18,7 +18,7 @@ class USER:
         self.payload_size = payload_size
         self.frequency = frequencys
         self.counter = np.zeros(len(apps))
-        self.time_out = 10
+        self.time_out = 3
         self.ms_chains = ms_chains
         self.bandwidth = bandwidth
         self.header = {"Content-Type": "application/json"} 
@@ -84,21 +84,31 @@ class USER:
             url = "http://%s/%s" % (self.head_ms[app],self.entry_points[app])
             payload = self.ms_chains[app]+"/"+''.join(random.choices(string.ascii_letters, k=self.payload_size[app]-len(self.ms_chains[app])-1))
 
+            mss = self.ms_chains[app].split(",")
+
+            avg_quality=0
+            for i in range(1, len(mss)):
+                avg_quality+=int(mss[i].split("-")[-2])
+            avg_quality = avg_quality/(len(mss)-1)        
+
             begin_time = time.time_ns()
             user_edge_delay = self.payload_size[app] * 8 / self.bandwidth
             time.sleep(user_edge_delay)
             try:
                 _ = requests.post(url, data=payload, headers=self.header, timeout=self.time_out)
+                elapsed_time = (time.time_ns() - begin_time) / 1e6
                 # print("Created a post \n url: %s \n ms_chain: %s" % (url, self.ms_chains[app]))
             except requests.exceptions.Timeout:
                 # Handle timeout exception
                 print(f"Request timed out after {self.time_out} seconds.")
+                elapsed_time = -1
             except requests.exceptions.RequestException as e:
                 # Handle other request exceptions
                 print(f"An error occurred: {e}")
-            elapsed_time = (time.time_ns() - begin_time) / 1e6
+                elapsed_time = -2
+            
 
-            measurement = {"user_id":self.id,"app":self.apps[app],"entry":self.entry_points[app] ,"edge":self.edge_id,"time":int(begin_time/1e6) ,"counter":counter, "latency":elapsed_time, "payload_size":self.payload_size[app], "freq":self.frequency[app] }
+            measurement = {"user_id":self.id,"app":self.apps[app],"entry":self.entry_points[app] ,"edge":self.edge_id,"time":int(begin_time/1e6) ,"counter":counter, "latency":elapsed_time, "payload_size":self.payload_size[app], "freq":self.frequency[app], "avg_quality":avg_quality }
             # print("Insert one measurement to DB: ", measurement)
             self.collection.insert_one(measurement)
         except Exception as e:
