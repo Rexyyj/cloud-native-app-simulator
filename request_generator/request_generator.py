@@ -126,10 +126,13 @@ class USER:
     def producer(self, app):
         interval = 1 / self.frequency[app]
         while not self.stop_event.is_set():
-            print("Producer %d running" % app)
+            # print("Producer %d running" % app)
             # Add task to the queue
             self.counter[app]+=1
-            self.task_queue.put({"counter": self.counter[app], "app":app})
+            try:
+                self.task_queue.put({"counter": self.counter[app], "app":app}, timeout=1)
+            except:
+                print("Task queue full.....")
             time.sleep(interval)  # Control the frequency accurately
 
 class REQGEN:
@@ -203,7 +206,9 @@ if __name__ == "__main__":
     # set this address to host ip address to enable dockers to use REST api
     cherrypy.server.socket_host = "0.0.0.0"
     cherrypy.config.update(
-        {'server.socket_port':2333 })
+        {'server.socket_port':2333,
+         'server.thread_pool': 50  # increase this depending on hardware
+           })
 
     # Blocking the terminal and show output, for debug
     cherrypy.tree.mount(request_generator, "/",conf)

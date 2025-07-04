@@ -1,0 +1,99 @@
+{
+  "settings": {
+    "logging": true,
+    "development": true
+  },
+  "cluster_latencies": [
+    {
+      "src": "cluster1",
+      "dest": "cluster2",
+      "latency": 0.002
+    }
+  ],
+  "services": [
+    {
+      "name": "service1",
+      "protocol": "http",
+      "clusters": [
+        {
+          "cluster": "cluster-1",
+          "namespace": "default",
+          "replicas": 1,
+          "node": "k8s-node"
+        }
+      ],
+      "resources": {
+        "limits": {
+          "memory": "1024M",
+          "cpu": "1000m"
+        },
+        "requests": {
+          "memory": "1024M",
+          "cpu": "1000m"
+        }
+      },
+      "processes": 2,
+      "readiness_probe": 1,
+      "endpoints": [
+        {
+          "name": "endpoint1",
+          "execution_mode": "sequential",
+          "cpu_complexity": {
+            "execution_time": 0.05,
+            "threads": 1
+          },
+          "network_complexity": {
+            "forward_requests": "asynchronous",
+            "response_payload_size": 512,
+            "called_services": [
+              {
+                "service": "service2",
+                "endpoint": "endpoint1",
+                "traffic_forward_ratio": 1,
+                "request_payload_size": 256
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "service2",
+      "protocol": "http",
+      "clusters": [
+        {
+          "cluster": "cluster-1",
+          "namespace": "default",
+          "replicas": 1,
+          "node": "k8s-node"
+        }
+      ],
+      "resources": {
+        "limits": {
+          "memory": "1024M",
+          "cpu": "1000m"
+        },
+        "requests": {
+          "memory": "1024M",
+          "cpu": "1000m"
+        }
+      },
+      "processes": 2,
+      "readiness_probe": 1,
+      "endpoints": [
+        {
+          "name": "endpoint1",
+          "execution_mode": "parallel",
+          "cpu_complexity": {
+            "execution_time": 0.05,
+            "threads": 1
+          },
+          "network_complexity": {
+            "forward_requests": "asynchronous",
+            "response_payload_size": 512
+          }
+        }
+      ]
+    }
+  ]
+}
