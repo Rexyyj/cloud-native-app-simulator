@@ -1,0 +1,84 @@
+{
+    "name": "ms9",
+    "protocol": "http",
+    "clusters": [
+        {
+            "cluster": "cluster-1",
+            "namespace": "default",
+            "replicas": 1,
+            "node": "dummy"
+        }
+    ],
+    "resources": {
+        "limits": {
+            "memory": "100M",
+            "cpu": "1000m"
+        },
+        "requests": {
+            "memory": "50M",
+            "cpu": "100m"
+        }
+    },
+    "processes": 2,
+    "readiness_probe": 1,
+    "endpoints": [
+        {
+            "name": "endpoint1",
+            "execution_mode": "sequential",
+            "cpu_complexity": {
+                "execution_time": 0.028,
+                "threads": 1
+            },
+            "network_complexity": {
+                "forward_requests": "asynchronous",
+                "response_payload_size": 100,
+                "called_services": [
+                    {
+                        "service": "ms10",
+                        "endpoint": "endpoint1",
+                        "traffic_forward_ratio": 1,
+                        "request_payload_size": 100
+                    }
+                ]
+            }
+        }
+    ]
+},
+{
+    "name": "ms10",
+    "protocol": "http",
+    "clusters": [
+        {
+            "cluster": "cluster-1",
+            "namespace": "default",
+            "replicas": 1,
+            "node": "dummy"
+        }
+    ],
+    "resources": {
+        "limits": {
+            "memory": "100M",
+            "cpu": "1000m"
+        },
+        "requests": {
+            "memory": "50M",
+            "cpu": "100m"
+        }
+    },
+    "processes": 2,
+    "readiness_probe": 1,
+    "endpoints": [
+        {
+            "name": "endpoint1",
+            "execution_mode": "parallel",
+            "cpu_complexity": {
+                "execution_time": 0.028,
+                "threads": 1
+            },
+            "network_complexity": {
+                "forward_requests": "asynchronous",
+                "response_payload_size": 100
+            }
+        }
+    ]
+}, 
