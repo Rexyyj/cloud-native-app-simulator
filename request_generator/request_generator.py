@@ -41,8 +41,8 @@ class USER:
         self.task_queue = Queue(maxsize=20)
 
         self.client = MongoClient("mongodb://mongodb:27017/")
-        self.db = self.client["test_database"]
-        self.collection = self.db["test_collection"]
+        # self.db = self.client["test_database"]
+        # self.collection = self.db["test_collection"]
         # self.is_running = False
         self.stop_event = threading.Event()
         self.run()
@@ -100,18 +100,26 @@ class USER:
                 # print("Created a post \n url: %s \n ms_chain: %s" % (url, self.ms_chains[app]))
             except requests.exceptions.Timeout:
                 # Handle timeout exception
+                print("In send pose inner 1")
                 print(f"Request timed out after {self.time_out} seconds.")
                 elapsed_time = -1
             except requests.exceptions.RequestException as e:
                 # Handle other request exceptions
+                print("In send pose inner 2")
                 print(f"An error occurred: {e}")
                 elapsed_time = -2
+            except  Exception as e:
+                print("In send pose inner 3")
+                print(f"An error occurred: {e}")
+                elapsed_time = -3
             
 
-            measurement = {"user_id":self.id,"app":self.apps[app],"entry":self.entry_points[app] ,"edge":self.edge_id,"time":int(begin_time/1e6) ,"counter":counter, "latency":elapsed_time, "payload_size":self.payload_size[app], "freq":self.frequency[app], "avg_quality":avg_quality }
+            measurement = {"user_id":self.id,"app":self.apps[app],"entry":self.entry_points[app] ,"edge":self.edge_id,"time":int(begin_time/1e9) ,"counter":counter, "latency":elapsed_time, "payload_size":self.payload_size[app], "freq":self.frequency[app], "avg_quality":avg_quality }
             # print("Insert one measurement to DB: ", measurement)
-            self.collection.insert_one(measurement)
+            collection = self.client["test_database"]["test_collection"]
+            collection.insert_one(measurement)
         except Exception as e:
+            print("In send pose outer")
             print(f"Error: {e}")
 
     # Worker function to process requests from the queue
@@ -145,9 +153,12 @@ class REQGEN:
     #{"user_id":1, payload_size:[](bytes),frequency:[] (Hz), bandwidth:10000 (bps),"app":[], ms_chian: []"2,MS1-1-1,1-2"}
     def POST(self, *uri):
         if uri[0] == "run":
-            body = cherrypy.request.body.read()
-            data = pickle.loads(body)
-            print(self.user_dict)
+            try:
+                body = cherrypy.request.body.read()
+                data = pickle.loads(body)
+                print(self.user_dict)
+            except Exception as e:
+                return pickle.dumps({"error": f"Invalid request: {e}"})
             try: 
                 user = self.user_dict[data["user_id"]]
                 user.update_configuration(data)
@@ -166,8 +177,11 @@ class REQGEN:
             return pickle.dumps(response)
         
         if uri[0] == "updateBW":
-            body = cherrypy.request.body.read()
-            data = pickle.loads(body)
+            try:
+                body = cherrypy.request.body.read()
+                data = pickle.loads(body)
+            except Exception as e:
+                return pickle.dumps({"error": f"Invalid request: {e}"})
             try:
                 user = self.user_dict[data["user_id"]]
                 user.update_bandwidth(data["bandwidth"])
@@ -177,8 +191,11 @@ class REQGEN:
             return pickle.dumps(response)
 
         if uri[0] == "stop":
-            body = cherrypy.request.body.read()
-            data = pickle.loads(body)
+            try:
+                body = cherrypy.request.body.read()
+                data = pickle.loads(body)
+            except Exception as e:
+                return pickle.dumps({"error": f"Invalid request: {e}"})
             try:
                 user = self.user_dict[data["user_id"]]
                 user.stop()
